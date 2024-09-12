@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Employee Detail Management System</title>
+    <style>
+        body {
+            font-family: Arial;
+            margin: 20px;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            background-color: powderblue;
+        }
+        input, button {
+            margin: 10px;
+            padding: 10px;
+            width: calc(100%);
+            border-radius: 15px;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Employee Detail Management System</h2>
+    
+    <input type="text" id="name" placeholder="Employee Name" required>
+    <input type="number" id="emp_id" placeholder="Employee ID" required>
+    <input type="text" id="department" placeholder="Department" required>
+    <input type="number" id="salary" placeholder="Salary" step="0.01" required>
+    <button onclick="addEmployee()">Add Employee</button>
+
+    <input type="number" id="search_emp_id" placeholder="Enter Employee ID to Search">
+    <button onclick="searchEmployee()">Search Employee</button>
+    
+    <input type="number" id="delete_emp_id" placeholder="Enter Employee ID to Delete">
+    <button onclick="deleteEmployee()">Delete Employee</button>
+    
+    <button onclick="displayEmployees()">Display Employees</button>
+
+    <table id="employeeTable">
+        <thead>
+            <tr>
+                <th>Employee ID</th>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Salary</th>
+            </tr>
+        </thead>
+        <tbody id="employeeData"></tbody>
+    </table>
+</div>
+
+<script>
+
+class EmployeeNode {
+    constructor(emp_id, name, department, salary) {
+        this.emp_id = emp_id;
+        this.name = name;
+        this.department = department;
+        this.salary = salary;
+        this.next = null;
+    }
+}
+
+
+class EmployeeList {
+    constructor() {
+        this.head = null;
+    }
+
+    addEmployee(emp_id, name, department, salary) {
+        const newEmployee = new EmployeeNode(emp_id, name, department, salary);
+
+        if (this.findEmployee(emp_id)) {
+            alert("Employee record already exists.");
+            return;
+        }
+
+        if (!this.head || this.head.emp_id > emp_id) {
+            newEmployee.next = this.head;
+            this.head = newEmployee;
+        } else {
+            let current = this.head;
+            while (current.next && current.next.emp_id < emp_id) {
+                current = current.next;
+            }
+            newEmployee.next = current.next;
+            current.next = newEmployee;
+        }
+    }
+
+    deleteEmployee(emp_id) {
+        if (!this.head) return false;
+
+        if (this.head.emp_id === emp_id) {
+            this.head = this.head.next;
+            return true;
+        }
+
+        let current = this.head;
+        while (current.next && current.next.emp_id !== emp_id) {
+            current = current.next;
+        }
+
+        if (current.next) {
+            current.next = current.next.next;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    findEmployee(emp_id) {
+        let current = this.head;
+        while (current) {
+            if (current.emp_id === emp_id) return current;
+            current = current.next;
+        }
+        return null;
+    }
+
+    displayEmployees() {
+        let current = this.head;
+        const employees = [];
+        while (current) {
+            employees.push(current);
+            current = current.next;
+        }
+        return employees;
+    }
+}
+
+const employeeList = new EmployeeList();
+
+
+function addEmployee() {
+    const name = document.getElementById("name").value;
+    const emp_id = parseInt(document.getElementById("emp_id").value);
+    const department = document.getElementById("department").value;
+    const salary = parseFloat(document.getElementById("salary").value);
+
+    if (!name || !emp_id || !department || !salary) {
+        alert("Please fill all the fields.");
+        return;
+    }
+
+    employeeList.addEmployee(emp_id, name, department, salary);
+    clearInputs();
+    displayEmployees();
+}
+
+
+function deleteEmployee() {
+    const emp_id = parseInt(document.getElementById("delete_emp_id").value);
+    const result = employeeList.deleteEmployee(emp_id);
+
+    if (result) {
+        alert("Employee record deleted.");
+    } else {
+        alert("Employee record not found.");
+    }
+    document.getElementById("delete_emp_id").value = "";
+    displayEmployees();
+}
+
+function searchEmployee() {
+    const emp_id = parseInt(document.getElementById("search_emp_id").value);
+    const employee = employeeList.findEmployee(emp_id);
+
+    if (employee) {
+alert("Employee found.");
+            } else {
+        alert("Employee not found.");
+    }
+    document.getElementById("search_emp_id").value = "";
+}
+
+
+function displayEmployees() {
+    const employeeData = document.getElementById("employeeData");
+    employeeData.innerHTML = "";
+    const employees = employeeList.displayEmployees();
+
+    employees.forEach(emp => {
+        const row = `<tr>
+            <td>${emp.emp_id}</td>
+            <td>${emp.name}</td>
+            <td>${emp.department}</td>
+            <td>${emp.salary.toFixed(2)}</td>
+        </tr>`;
+        employeeData.innerHTML += row;
+    });
+}
+
+
+function clearInputs() {
+    document.getElementById("name").value = "";
+    document.getElementById("emp_id").value = "";
+    document.getElementById("department").value = "";
+    document.getElementById("salary").value = "";
+}
+</script>
+
+</body>
+</html>
